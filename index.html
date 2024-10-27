@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BERGER</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('https://example.com/ocean-background.jpg') no-repeat center center fixed; /* Replace with your ocean background image URL */
+            background-size: cover; /* Cover the entire background */
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            overflow: hidden; /* Prevent scrollbars from appearing */
+        }
+
+        .game-container {
+            position: relative;
+            border: 5px solid #0077be; /* Blue border for the container */
+            border-radius: 15px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
+            width: 80vw; /* Responsive width */
+            height: 70vh; /* Responsive height */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Soft shadow effect */
+            margin-bottom: 20px; /* Space below the game container */
+        }
+
+        h1 {
+            color: #004d7a; /* Dark blue for the title */
+            font-size: 36px; /* Larger title size */
+            margin-bottom: 20px; /* Spacing below the title */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for text */
+        }
+
+        .burger {
+            width: 60px; /* Burger icon size */
+            cursor: pointer;
+            position: absolute; /* Position burgers randomly */
+            transition: transform 0.2s ease; /* Smooth scaling effect */
+        }
+
+        .burger.clicked {
+            transform: scale(1.5); /* Enlarge burger when clicked */
+            animation: bounce 0.3s; /* Bounce effect when clicked */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0); /* No movement */
+            }
+            40% {
+                transform: translateY(-10px); /* Move up */
+            }
+            60% {
+                transform: translateY(-5px); /* Move down */
+            }
+        }
+
+        .score {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #005f73; /* Dark teal for the score */
+            font-weight: bold; /* Bold score */
+        }
+
+        .level {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #0a9396; /* Lighter teal for the level */
+            font-weight: bold; /* Bold level */
+        }
+
+        #message {
+            font-size: 22px;
+            color: #e63946; /* Coral color for messages */
+            margin-top: 10px;
+            transition: opacity 0.5s; /* Fade in/out effect for messages */
+        }
+
+        #adButton {
+            padding: 10px 20px;
+            background-color: #0077be; /* Button color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        #adButton:hover {
+            background-color: #005f73; /* Darker shade on hover */
+        }
+
+        #adBanner {
+            width: 300px; /* Ad banner width */
+            height: 50px; /* Ad banner height */
+            background-color: #333; /* Placeholder background color */
+            color: white;
+            display: none; /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px; /* Space above the ad banner */
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BERGER</h1> <!-- Changed title to BERGER -->
+
+    <div class="game-container" id="gameContainer">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="level">Level: <span id="level">1</span></div>
+        <div id="message"></div>
+    </div>
+
+    <button id="adButton">Watch Ad for Extra Points!</button> <!-- Button to trigger ad -->
+    <div id="adBanner">Ad Banner Here</div> <!-- Placeholder for ad banner -->
+
+    <audio id="backgroundMusic" loop>
+        <source src="your-ocean-background-music.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="collectSound">
+        <source src="your-collect-sound.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        // Load score and level from localStorage or initialize them
+        let score = localStorage.getItem('score') ? parseInt(localStorage.getItem('score')) : 0;
+        let level = localStorage.getItem('level') ? parseInt(localStorage.getItem('level')) : 1; // Current level
+        let burgerInterval = 1000; // Interval for burger creation
+        let burgerCreation;
+
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const messageDisplay = document.getElementById('message');
+        const gameContainer = document.getElementById('gameContainer');
+        const adButton = document.getElementById('adButton');
+        const adBanner = document.getElementById('adBanner');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const collectSound = document.getElementById('collectSound');
+
+        // Play background music
+        backgroundMusic.volume = 0.5; // Set volume (0 to 1)
+        backgroundMusic.play();
+
+        // Initialize displays with loaded values
+        scoreDisplay.textContent = score;
+        levelDisplay.textContent = level;
+
+        // Function to create a burger icon at a random position
+        function createBurger() {
+            const burger = document.createElement('img');
+            burger.src = 'https://img.icons8.com/ios-filled/60/000000/hamburger.png'; // Single burger icon
+            burger.className = 'burger';
+            burger.style.left = Math.random() * (gameContainer.clientWidth - 60) + 'px'; // Random x position
+            burger.style.top = Math.random() * (gameContainer.clientHeight - 60) + 'px'; // Random y position
+
+            burger.addEventListener('click', function() {
+                score++; // Increment score
+                scoreDisplay.textContent = score;
+
+                // Play the collect sound
+                collectSound.currentTime = 0; // Reset sound
+                collectSound.play();
+
+                // Add a 'clicked' class to trigger the animation
+                burger.classList.add('clicked');
+
+                // Remove the burger after a short delay
+                setTimeout(() => {
+                    gameContainer.removeChild(burger);
+                }, 300); // Match the duration of the animation
+
+                // Level up logic
+                if (score % 10 === 0 && score > 0) {
+                    level++;
+                    levelDisplay.textContent = level; // Update level display
+                    burgerInterval = Math.max(500, 1000 - level * 100); // Decrease interval but not below 500ms
+                    clearInterval(burgerCreation);
+                    burgerCreation = setInterval(createBurger, burgerInterval); // Adjust burger creation rate
+                    messageDisplay.textContent = `Level Up! You're now at Level ${level}!`;
+                } else {
+                    messageDisplay.textContent = ""; // Clear message for other scores
+                }
+
+                // Save current state to local storage
+                localStorage.setItem('score', score);
+                localStorage.setItem('level', level);
+            });
+
+            gameContainer.appendChild(burger); // Add burger to the game container
+        }
+
+        // Start creating burgers with the current interval
+        burgerCreation = setInterval(createBurger, burgerInterval); 
+
+        // Function to simulate watching an ad and giving bonus points
+        function watchAd() {
+            const bonusPoints = 10; // Points awarded for watching an ad
+            score += bonusPoints;
+            scoreDisplay.textContent = score; // Update score display
+
+            // Show ad banner
+            adBanner.style.display = 'flex';
+            adBanner.textContent = `You watched an ad! Earned ${bonusPoints} points!`;
+            setTimeout(() => {
+                adBanner.style.display = 'none'; // Hide after 2 seconds
+            }, 2000); // Show for 2 seconds
+
+            // Save the new score
+            localStorage.setItem('score', score);
+        }
+
+        adButton.addEventListener('click', watchAd); // Attach event listener to the ad button
+    </script>
+</body>
+</html>
