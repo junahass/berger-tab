@@ -1,246 +1,131 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Burger Match — Wallet & Telegram Integrated</title>
+<html lang="en">      
+<head>      
+<meta charset="utf-8"/>      
+<meta name="viewport" content="width=device-width,initial-scale=1"/>      
+<title>Burger Match — Wallet & Telegram Integrated</title>  
 
-<!-- Simple styling -->
-<style>
-  :root{--accent1:#06beb6;--accent2:#48b1bf}
-  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(135deg,#ffecd2,#fcb69f);min-height:100vh;display:flex;flex-direction:column}
-  header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-  .left{display:flex;align-items:center;gap:12px}
-  .avatar{font-size:24px}
-  .player-name{font-weight:700}
-  .coins{font-weight:700}
-  main{flex:1;display:flex;justify-content:center;align-items:center;padding:14px 18px}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:600px}
-  .card{background:#fff;border-radius:12px;aspect-ratio:1/1;display:flex;justify-content:center;align-items:center;font-size:30px;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.12);transition:transform .12s}
-  .card:active{transform:scale(.98)}
-  footer{display:flex;gap:8px;padding:12px;justify-content:center;background:rgba(255,255,255,0.95)}
-  footer button{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;font-weight:700;cursor:pointer}
-  .modal{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,.6);z-index:999}
-  .panel{background:#fff;padding:16px;border-radius:12px;max-width:420px;width:92%;position:relative}
-  .panel h2{margin:0 0 8px}
-  .close{position:absolute;right:12px;top:8px;cursor:pointer;font-size:18px}
-  .wallet-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}
-  .btn{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
-  .btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}
-  .btn-danger{background:#e53935;color:#fff}
-  .small{font-size:.9rem;color:#555}
-  .addr{font-family:monospace;background:#f5f5f5;padding:6px;border-radius:6px;display:inline-block}
-  .lb-entry{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
-</style>
+<style>      
+  :root{--accent1:#06beb6;--accent2:#48b1bf}      
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(135deg,#ffecd2,#fcb69f);min-height:100vh;display:flex;flex-direction:column}      
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.08)}      
+  .left{display:flex;align-items:center;gap:12px}      
+  .avatar{font-size:24px}      
+  .player-name{font-weight:700}      
+  .coins{font-weight:700}      
+  main{flex:1;display:flex;justify-content:center;align-items:center;padding:14px 18px}      
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:600px}      
+  .card{background:#fff;border-radius:12px;aspect-ratio:1/1;display:flex;justify-content:center;align-items:center;font-size:30px;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.12);transition:transform .12s}      
+  .card:active{transform:scale(.98)}      
+  footer{display:flex;gap:8px;padding:12px;justify-content:center;background:rgba(255,255,255,0.95)}      
+  footer button{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;font-weight:700;cursor:pointer}      
+  .modal{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,.6);z-index:999}      
+  .panel{background:#fff;padding:16px;border-radius:12px;max-width:420px;width:92%;position:relative}      
+  .panel h2{margin:0 0 8px}      
+  .close{position:absolute;right:12px;top:8px;cursor:pointer;font-size:18px}      
+  .wallet-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}      
+  .btn{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}      
+  .btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}      
+  .btn-danger{background:#e53935;color:#fff}      
+  .small{font-size:.9rem;color:#555}      
+  .addr{font-family:monospace;background:#f5f5f5;padding:6px;border-radius:6px;display:inline-block}      
+  .lb-entry{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}      
+</style>  
 
-<!-- Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/walletlink@1.1.0/dist/walletlink.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
-</head>
-<body>
+<!-- Libraries -->  
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/walletlink@1.1.0/dist/walletlink.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>  
 
-<header>
-  <div class="left">
-    <div class="avatar" id="uiAvatar">👤</div>
-    <div>
-      <div class="player-name" id="uiName">Player</div>
-      <div class="small" id="uiDob">DOB: Not set</div>
-    </div>
-  </div>
-  <div>
-    <div class="coins">💰 <span id="uiCoins">0</span></div>
-  </div>
-</header>
-
-<main>
-  <div class="grid" id="grid"></div>
-</main>
-
-<footer>
-  <button onclick="openPanel('leaderboardPanel')">🏆 Leaderboard</button>
-  <button onclick="openPanel('sharePanel')">📤 Share</button>
-  <button onclick="openPanel('profilePanel')">👤 Profile</button>
-  <button onclick="openPanel('walletPanel')">👛 Wallet</button>
-</footer>
-
-<!-- Panels / Modals -->
-<div id="walletPanel" class="modal"><div class="panel">
-  <div class="close" onclick="closePanel('walletPanel')">&times;</div>
-  <h2>Connect Wallet</h2>
-
-  <div class="wallet-row"><div class="small">Connected</div><div id="wcStatus" class="small">No</div></div>
-  <div style="margin:12px 0">
-    <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
-    <button id="disconnectBtn" class="btn btn-danger" style="display:none;margin-left:8px">Disconnect</button>
-  </div>
-
-  <div style="margin-top:8px">
-    <div class="small">Address: <span id="wcAddress" class="addr">—</span></div>
-    <div class="small" style="margin-top:6px">Network: <span id="wcChain">—</span></div>
-    <div class="small" style="margin-top:6px">Balance: <span id="wcBalance">—</span></div>
-  </div>
-
-  <p class="small" style="margin-top:12px;color:#666">MetaMask (desktop/injected), WalletConnect (mobile wallets), Coinbase Wallet supported. Serve over HTTPS for mobile flows.</p>
-</div></div>
-
-<div id="profilePanel" class="modal"><div class="panel">
-  <div class="close" onclick="closePanel('profilePanel')">&times;</div>
-  <h2>Profile</h2>
-  <div style="font-size:40px" id="panelAvatar">👤</div>
-  <p><b>Name:</b> <span id="panelName">Player</span></p>
-  <p><b>DOB:</b> <span id="panelDob">Not set</span></p>
-</div></div>
-
-<div id="leaderboardPanel" class="modal"><div class="panel">
-  <div class="close" onclick="closePanel('leaderboardPanel')">&times;</div>
-  <h2>Leaderboard</h2>
-  <div id="leaderboardList"></div>
-</div></div>
-
-<div id="sharePanel" class="modal"><div class="panel">
-  <div class="close" onclick="closePanel('sharePanel')">&times;</div>
-  <h2>Share</h2>
-  <p id="shareText">Share your score</p>
-  <button class="btn" onclick="copyShare()">Copy</button>
-</div></div>
-
+<!-- AdsGram SDK -->
+<script async src="https://adsgram.ai/js/ad.js"></script>
 <script>
-/* =========================
-   Wallet + Web3Modal Setup
-   ========================= */
-
-const providerOptions = {
-  walletconnect: {
-    package: window.WalletConnectProvider.default,
-    options: {
-      rpc: { 1: "https://cloudflare-eth.com" },
-      bridge: "https://bridge.walletconnect.org",
-      qrcode: true
-    }
-  },
-  walletlink: {
-    package: window.WalletLink,
-    options: {
-      appName: "Burger Match",
-      rpc: "https://cloudflare-eth.com",
-      chainId: 1
+  function showInterstitialAd() {
+    if (window.Adsgram) {
+      window.Adsgram.showInterstitialAd({
+        blockId: "int-15343"
+      });
     }
   }
-};
+</script>
 
-let web3Modal;
-try { web3Modal = new window.Web3Modal.default({ cacheProvider: false, providerOptions }); } catch(e){ console.warn('Web3Modal init failed', e); }
+</head>      
 
-let rawProvider = null;
-let ethersProvider = null;
-let signer = null;
+<body>  
+<header>      
+  <div class="left">      
+    <div class="avatar" id="uiAvatar">👤</div>      
+    <div>      
+      <div class="player-name" id="uiName">Player</div>      
+      <div class="small" id="uiDob">DOB: Not set</div>      
+    </div>      
+  </div>      
+  <div>      
+    <div class="coins">💰 <span id="uiCoins">0</span></div>      
+  </div>      
+</header>  
 
-const connectBtn = document.getElementById('connectBtn');
-const disconnectBtn = document.getElementById('disconnectBtn');
-const wcStatus = document.getElementById('wcStatus');
-const wcAddress = document.getElementById('wcAddress');
-const wcChain = document.getElementById('wcChain');
-const wcBalance = document.getElementById('wcBalance');
+<main>      
+  <div class="grid" id="grid"></div>      
+</main>  
 
-async function connectWallet(){
-  if (!web3Modal) { alert("Wallet connection not available."); return; }
-  try {
-    rawProvider = await web3Modal.connect();
-    // listen
-    rawProvider.on && rawProvider.on("accountsChanged", (accounts) => onAccountsChanged(accounts));
-    rawProvider.on && rawProvider.on("chainChanged", (chainId) => onChainChanged(chainId));
-    rawProvider.on && rawProvider.on("disconnect", (code, reason) => onDisconnect());
+<footer>      
+  <button onclick="openPanel('leaderboardPanel')">🏆 Leaderboard</button>      
+  <button onclick="openPanel('sharePanel')">📤 Share</button>      
+  <button onclick="openPanel('profilePanel')">👤 Profile</button>      
+  <button onclick="openPanel('walletPanel')">👛 Wallet</button>      
+</footer>  
 
-    ethersProvider = new ethers.providers.Web3Provider(rawProvider);
-    signer = ethersProvider.getSigner();
+<!-- Panels / Modals -->  
+<div id="walletPanel" class="modal"><div class="panel">      
+  <div class="close" onclick="closePanel('walletPanel')">&times;</div>      
+  <h2>Connect Wallet</h2>    
+  <div class="wallet-row"><div class="small">Connected</div><div id="wcStatus" class="small">No</div></div>      
+  <div style="margin:12px 0">      
+    <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>      
+    <button id="disconnectBtn" class="btn btn-danger" style="display:none;margin-left:8px">Disconnect</button>      
+  </div>    
+  <div style="margin-top:8px">      
+    <div class="small">Address: <span id="wcAddress" class="addr">—</span></div>      
+    <div class="small" style="margin-top:6px">Network: <span id="wcChain">—</span></div>      
+    <div class="small" style="margin-top:6px">Balance: <span id="wcBalance">—</span></div>      
+  </div>    
+  <p class="small" style="margin-top:12px;color:#666">MetaMask (desktop/injected), WalletConnect (mobile wallets), Coinbase Wallet supported. Serve over HTTPS for mobile flows.</p>      
+</div></div>  
 
-    const address = await signer.getAddress();
-    const network = await ethersProvider.getNetwork();
-    const balanceBN = await ethersProvider.getBalance(address);
-    const balance = parseFloat(ethers.utils.formatEther(balanceBN));
+<div id="profilePanel" class="modal"><div class="panel">      
+  <div class="close" onclick="closePanel('profilePanel')">&times;</div>      
+  <h2>Profile</h2>      
+  <div style="font-size:40px" id="panelAvatar">👤</div>      
+  <p><b>Name:</b> <span id="panelName">Player</span></p>      
+  <p><b>DOB:</b> <span id="panelDob">Not set</span></p>      
+</div></div>  
 
-    wcStatus.textContent = "Yes";
-    wcAddress.textContent = short(address);
-    wcChain.textContent = `${network.name} (id:${network.chainId})`;
-    wcBalance.textContent = `${balance.toFixed(4)} ETH`;
-    connectBtn.style.display = 'none';
-    disconnectBtn.style.display = 'inline-block';
+<div id="leaderboardPanel" class="modal"><div class="panel">      
+  <div class="close" onclick="closePanel('leaderboardPanel')">&times;</div>      
+  <h2>Leaderboard</h2>      
+  <div id="leaderboardList"></div>      
+</div></div>  
 
-    // Use wallet address as player identity automatically (short form in UI)
-    player.id = address;
-    player.name = short(address);
-    savePlayer();
-    refreshHeader();
+<div id="sharePanel" class="modal"><div class="panel">      
+  <div class="close" onclick="closePanel('sharePanel')">&times;</div>      
+  <h2>Share</h2>      
+  <p id="shareText">Share your score</p>      
+  <button class="btn" onclick="copyShare()">Copy</button>      
+</div></div>  
 
-  } catch (err) {
-    console.error("connect error", err);
-    alert("Connection failed. Check console for details.");
-  }
-}
-
-async function disconnectWallet(){
-  try{
-    if (rawProvider && rawProvider.close) await rawProvider.close();
-    if (web3Modal && web3Modal.clearCachedProvider) await web3Modal.clearCachedProvider();
-  } catch(e){ console.warn('disconnect err', e); }
-  rawProvider = null; ethersProvider = null; signer = null;
-  wcStatus.textContent = "No";
-  wcAddress.textContent = "—";
-  wcChain.textContent = "—";
-  wcBalance.textContent = "—";
-  connectBtn.style.display = 'inline-block';
-  disconnectBtn.style.display = 'none';
-
-  // revert to guest id (keep emoji avatar)
-  if (player && player.id && player.id.startsWith('0x')) {
-    // create guest id but keep avatar
-    const oldAvatar = player.avatar;
-    player = { id: 'guest-'+Math.floor(Math.random()*100000), name: 'Player', dob:'', avatar: oldAvatar, coins: player.coins || 0 };
-    savePlayer();
-    refreshHeader();
-  }
-}
-
-function onAccountsChanged(accounts){
-  if (!accounts || accounts.length === 0) {
-    disconnectWallet();
-    return;
-  }
-  wcAddress.textContent = short(accounts[0]);
-  // automatically switch identity
-  player.id = accounts[0];
-  player.name = short(accounts[0]);
-  savePlayer();
-  refreshHeader();
-}
-
-function onChainChanged(chainId){
-  try { wcChain.textContent = 'chain ' + (parseInt(chainId,16) || chainId); } catch(e){ wcChain.textContent = chainId; }
-}
-
-function onDisconnect(){ disconnectWallet(); }
-
-function short(addr){
-  return addr && addr.length>10 ? addr.slice(0,6)+'...'+addr.slice(-4) : addr;
-}
-
-connectBtn && connectBtn.addEventListener('click', connectWallet);
-disconnectBtn && disconnectBtn.addEventListener('click', disconnectWallet);
-
+<script>      
 /* =========================
-   Game + Profile + Leaderboard
-   ========================= */
+Game + Profile + Leaderboard
+========================= */
 
 const emojiList = ["🍔","🎮","🚀","🦊","🐼","🐸","🐧","🐯","🦁","🐱"];
-// load player either from Telegram WebApp, or saved, or guest
 let tg = window.Telegram?.WebApp;
 let player = null;
 
 if (tg && tg.initDataUnsafe?.user) {
   const u = tg.initDataUnsafe.user;
-  // if we previously saved a player with that id, load it
   const saved = localStorage.getItem('player_'+u.id);
   if (saved) {
     player = JSON.parse(saved);
@@ -257,7 +142,6 @@ if (tg && tg.initDataUnsafe?.user) {
   }
 }
 
-// UI refs
 const uiAvatar = document.getElementById('uiAvatar');
 const uiName = document.getElementById('uiName');
 const uiDob = document.getElementById('uiDob');
@@ -275,7 +159,6 @@ function refreshHeader(){
 }
 refreshHeader();
 
-// spawn 4x4 grid
 const items = ["🍔","🍕","🌭","🍟","🍩","🍎","🥪","🍫"];
 function spawnGrid(){
   grid.innerHTML = '';
@@ -297,13 +180,16 @@ function onCardClick(card){
   if (first === card){ first.style.transform=''; first = null; return; }
 
   if (first.dataset.item === card.dataset.item){
-    // matched
     player.coins = (player.coins||0) + 100;
     localStorage.setItem('coins', player.coins);
-    savePlayer(); // updates leaderboard
+    savePlayer();
     refreshHeader();
 
-    // sparkle visual
+    // 🔥 Show AdsGram ad every 500 coins
+    if (player.coins % 500 === 0) {
+      showInterstitialAd();
+    }
+
     const s = document.createElement('div');
     s.textContent = '✨';
     s.style.position = 'absolute';
@@ -314,7 +200,6 @@ function onCardClick(card){
     document.body.appendChild(s);
     setTimeout(()=> s.remove(), 700);
 
-    // fade & respawn
     [first, card].forEach(el=>{
       el.classList.add('fade-out');
       setTimeout(()=>{
@@ -326,22 +211,19 @@ function onCardClick(card){
         setTimeout(()=> el.classList.remove('fade-in'), 300);
       }, 300);
     });
+
   } else {
-    // mismatch -> quick visual reset
     setTimeout(()=> { first.style.transform=''; card.style.transform=''; }, 250);
   }
   first.style.transform=''; first = null;
 }
 
-/* Leaderboard local-only, unique by player.id */
 function savePlayer(){
   if (player.id && player.id.startsWith('0x')) {
-    // store under wallet address key for persistence across browsers if used again on same device + wallet
     localStorage.setItem('player_'+player.id, JSON.stringify(player));
   } else {
     localStorage.setItem('player', JSON.stringify(player));
   }
-  // update leaderboard
   let lb = JSON.parse(localStorage.getItem('leaderboard')) || [];
   lb = lb.filter(e => e.id !== player.id);
   lb.push({ id: player.id, name: player.name, avatar: player.avatar, coins: player.coins });
@@ -353,10 +235,11 @@ function renderLeaderboard(){
   const container = document.getElementById('leaderboardList');
   const lb = JSON.parse(localStorage.getItem('leaderboard')) || [];
   if (lb.length === 0) { container.innerHTML = '<div class="small">No scores yet</div>'; return; }
-  container.innerHTML = lb.map((e,i)=> `<div class="lb-entry"><div>${i+1}. ${e.avatar} ${e.name}</div><div><b>${e.coins}💰</b></div></div>`).join('');
+  container.innerHTML = lb.map((e,i)=> 
+    `<div class="lb-entry"><div>${i+1}. ${e.avatar} ${e.name}</div><div><b>${e.coins}💰</b></div></div>`
+  ).join('');
 }
 
-/* Panels open/close */
 function openPanel(id){
   document.getElementById(id).style.display = 'flex';
   if (id === 'leaderboardPanel') renderLeaderboard();
@@ -364,18 +247,14 @@ function openPanel(id){
 }
 function closePanel(id){ document.getElementById(id).style.display = 'none'; }
 
-/* Share copying */
 function copyShare(){
   const text = `${player.avatar} ${player.name} has ${player.coins} coins!`;
   navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard'));
 }
 
-/* Initialize UI saved state */
 savePlayer(); renderLeaderboard(); refreshHeader();
-
-/* Expose for debugging */
 window._burger = { player, savePlayer, spawnGrid, renderLeaderboard };
+</script>  
 
-</script>
 </body>
 </html>
