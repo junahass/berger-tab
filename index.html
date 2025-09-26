@@ -1,226 +1,381 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BERGER</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: url('https://example.com/ocean-background.jpg') no-repeat center center fixed; /* Replace with your ocean background image URL */
-            background-size: cover; /* Cover the entire background */
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            overflow: hidden; /* Prevent scrollbars from appearing */
-        }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Burger Match — Wallet & Telegram Integrated</title>
 
-        .game-container {
-            position: relative;
-            border: 5px solid #0077be; /* Blue border for the container */
-            border-radius: 15px;
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
-            width: 80vw; /* Responsive width */
-            height: 70vh; /* Responsive height */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Soft shadow effect */
-            margin-bottom: 20px; /* Space below the game container */
-        }
+<!-- Simple styling -->
+<style>
+  :root{--accent1:#06beb6;--accent2:#48b1bf}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(135deg,#ffecd2,#fcb69f);min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+  .left{display:flex;align-items:center;gap:12px}
+  .avatar{font-size:24px}
+  .player-name{font-weight:700}
+  .coins{font-weight:700}
+  main{flex:1;display:flex;justify-content:center;align-items:center;padding:14px 18px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:600px}
+  .card{background:#fff;border-radius:12px;aspect-ratio:1/1;display:flex;justify-content:center;align-items:center;font-size:30px;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.12);transition:transform .12s}
+  .card:active{transform:scale(.98)}
+  footer{display:flex;gap:8px;padding:12px;justify-content:center;background:rgba(255,255,255,0.95)}
+  footer button{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;font-weight:700;cursor:pointer}
+  .modal{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,.6);z-index:999}
+  .panel{background:#fff;padding:16px;border-radius:12px;max-width:420px;width:92%;position:relative}
+  .panel h2{margin:0 0 8px}
+  .close{position:absolute;right:12px;top:8px;cursor:pointer;font-size:18px}
+  .wallet-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}
+  .btn{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
+  .btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}
+  .btn-danger{background:#e53935;color:#fff}
+  .small{font-size:.9rem;color:#555}
+  .addr{font-family:monospace;background:#f5f5f5;padding:6px;border-radius:6px;display:inline-block}
+  .lb-entry{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
+</style>
 
-        h1 {
-            color: #004d7a; /* Dark blue for the title */
-            font-size: 36px; /* Larger title size */
-            margin-bottom: 20px; /* Spacing below the title */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for text */
-        }
-
-        .burger {
-            width: 60px; /* Burger icon size */
-            cursor: pointer;
-            position: absolute; /* Position burgers randomly */
-            transition: transform 0.2s ease; /* Smooth scaling effect */
-        }
-
-        .burger.clicked {
-            transform: scale(1.5); /* Enlarge burger when clicked */
-            animation: bounce 0.3s; /* Bounce effect when clicked */
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0); /* No movement */
-            }
-            40% {
-                transform: translateY(-10px); /* Move up */
-            }
-            60% {
-                transform: translateY(-5px); /* Move down */
-            }
-        }
-
-        .score {
-            font-size: 28px;
-            margin: 20px 0;
-            color: #005f73; /* Dark teal for the score */
-            font-weight: bold; /* Bold score */
-        }
-
-        .level {
-            font-size: 28px;
-            margin: 20px 0;
-            color: #0a9396; /* Lighter teal for the level */
-            font-weight: bold; /* Bold level */
-        }
-
-        #message {
-            font-size: 22px;
-            color: #e63946; /* Coral color for messages */
-            margin-top: 10px;
-            transition: opacity 0.5s; /* Fade in/out effect for messages */
-        }
-
-        #adButton {
-            padding: 10px 20px;
-            background-color: #0077be; /* Button color */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-            margin-top: 20px;
-        }
-
-        #adButton:hover {
-            background-color: #005f73; /* Darker shade on hover */
-        }
-
-        #adBanner {
-            width: 300px; /* Ad banner width */
-            height: 50px; /* Ad banner height */
-            background-color: #333; /* Placeholder background color */
-            color: white;
-            display: none; /* Initially hidden */
-            align-items: center;
-            justify-content: center;
-            margin-top: 20px; /* Space above the ad banner */
-            border-radius: 5px;
-        }
-    </style>
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/walletlink@1.1.0/dist/walletlink.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
 </head>
 <body>
-    <h1>BERGER</h1> <!-- Changed title to BERGER -->
 
-    <div class="game-container" id="gameContainer">
-        <div class="score">Score: <span id="score">0</span></div>
-        <div class="level">Level: <span id="level">1</span></div>
-        <div id="message"></div>
+<header>
+  <div class="left">
+    <div class="avatar" id="uiAvatar">👤</div>
+    <div>
+      <div class="player-name" id="uiName">Player</div>
+      <div class="small" id="uiDob">DOB: Not set</div>
     </div>
+  </div>
+  <div>
+    <div class="coins">💰 <span id="uiCoins">0</span></div>
+  </div>
+</header>
 
-    <button id="adButton">Watch Ad for Extra Points!</button> <!-- Button to trigger ad -->
-    <div id="adBanner">Ad Banner Here</div> <!-- Placeholder for ad banner -->
+<main>
+  <div class="grid" id="grid"></div>
+</main>
 
-    <audio id="backgroundMusic" loop>
-        <source src="your-ocean-background-music.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-    
-    <audio id="collectSound">
-        <source src="your-collect-sound.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
+<footer>
+  <button onclick="openPanel('leaderboardPanel')">🏆 Leaderboard</button>
+  <button onclick="openPanel('sharePanel')">📤 Share</button>
+  <button onclick="openPanel('profilePanel')">👤 Profile</button>
+  <button onclick="openPanel('walletPanel')">👛 Wallet</button>
+</footer>
 
-    <script>
-        // Load score and level from localStorage or initialize them
-        let score = localStorage.getItem('score') ? parseInt(localStorage.getItem('score')) : 0;
-        let level = localStorage.getItem('level') ? parseInt(localStorage.getItem('level')) : 1; // Current level
-        let burgerInterval = 1000; // Interval for burger creation
-        let burgerCreation;
+<!-- Panels / Modals -->
+<div id="walletPanel" class="modal"><div class="panel">
+  <div class="close" onclick="closePanel('walletPanel')">&times;</div>
+  <h2>Connect Wallet</h2>
 
-        const scoreDisplay = document.getElementById('score');
-        const levelDisplay = document.getElementById('level');
-        const messageDisplay = document.getElementById('message');
-        const gameContainer = document.getElementById('gameContainer');
-        const adButton = document.getElementById('adButton');
-        const adBanner = document.getElementById('adBanner');
-        const backgroundMusic = document.getElementById('backgroundMusic');
-        const collectSound = document.getElementById('collectSound');
+  <div class="wallet-row"><div class="small">Connected</div><div id="wcStatus" class="small">No</div></div>
+  <div style="margin:12px 0">
+    <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+    <button id="disconnectBtn" class="btn btn-danger" style="display:none;margin-left:8px">Disconnect</button>
+  </div>
 
-        // Play background music
-        backgroundMusic.volume = 0.5; // Set volume (0 to 1)
-        backgroundMusic.play();
+  <div style="margin-top:8px">
+    <div class="small">Address: <span id="wcAddress" class="addr">—</span></div>
+    <div class="small" style="margin-top:6px">Network: <span id="wcChain">—</span></div>
+    <div class="small" style="margin-top:6px">Balance: <span id="wcBalance">—</span></div>
+  </div>
 
-        // Initialize displays with loaded values
-        scoreDisplay.textContent = score;
-        levelDisplay.textContent = level;
+  <p class="small" style="margin-top:12px;color:#666">MetaMask (desktop/injected), WalletConnect (mobile wallets), Coinbase Wallet supported. Serve over HTTPS for mobile flows.</p>
+</div></div>
 
-        // Function to create a burger icon at a random position
-        function createBurger() {
-            const burger = document.createElement('img');
-            burger.src = 'https://img.icons8.com/ios-filled/60/000000/hamburger.png'; // Single burger icon
-            burger.className = 'burger';
-            burger.style.left = Math.random() * (gameContainer.clientWidth - 60) + 'px'; // Random x position
-            burger.style.top = Math.random() * (gameContainer.clientHeight - 60) + 'px'; // Random y position
+<div id="profilePanel" class="modal"><div class="panel">
+  <div class="close" onclick="closePanel('profilePanel')">&times;</div>
+  <h2>Profile</h2>
+  <div style="font-size:40px" id="panelAvatar">👤</div>
+  <p><b>Name:</b> <span id="panelName">Player</span></p>
+  <p><b>DOB:</b> <span id="panelDob">Not set</span></p>
+</div></div>
 
-            burger.addEventListener('click', function() {
-                score++; // Increment score
-                scoreDisplay.textContent = score;
+<div id="leaderboardPanel" class="modal"><div class="panel">
+  <div class="close" onclick="closePanel('leaderboardPanel')">&times;</div>
+  <h2>Leaderboard</h2>
+  <div id="leaderboardList"></div>
+</div></div>
 
-                // Play the collect sound
-                collectSound.currentTime = 0; // Reset sound
-                collectSound.play();
+<div id="sharePanel" class="modal"><div class="panel">
+  <div class="close" onclick="closePanel('sharePanel')">&times;</div>
+  <h2>Share</h2>
+  <p id="shareText">Share your score</p>
+  <button class="btn" onclick="copyShare()">Copy</button>
+</div></div>
 
-                // Add a 'clicked' class to trigger the animation
-                burger.classList.add('clicked');
+<script>
+/* =========================
+   Wallet + Web3Modal Setup
+   ========================= */
 
-                // Remove the burger after a short delay
-                setTimeout(() => {
-                    gameContainer.removeChild(burger);
-                }, 300); // Match the duration of the animation
+const providerOptions = {
+  walletconnect: {
+    package: window.WalletConnectProvider.default,
+    options: {
+      rpc: { 1: "https://cloudflare-eth.com" },
+      bridge: "https://bridge.walletconnect.org",
+      qrcode: true
+    }
+  },
+  walletlink: {
+    package: window.WalletLink,
+    options: {
+      appName: "Burger Match",
+      rpc: "https://cloudflare-eth.com",
+      chainId: 1
+    }
+  }
+};
 
-                // Level up logic
-                if (score % 10 === 0 && score > 0) {
-                    level++;
-                    levelDisplay.textContent = level; // Update level display
-                    burgerInterval = Math.max(500, 1000 - level * 100); // Decrease interval but not below 500ms
-                    clearInterval(burgerCreation);
-                    burgerCreation = setInterval(createBurger, burgerInterval); // Adjust burger creation rate
-                    messageDisplay.textContent = `Level Up! You're now at Level ${level}!`;
-                } else {
-                    messageDisplay.textContent = ""; // Clear message for other scores
-                }
+let web3Modal;
+try { web3Modal = new window.Web3Modal.default({ cacheProvider: false, providerOptions }); } catch(e){ console.warn('Web3Modal init failed', e); }
 
-                // Save current state to local storage
-                localStorage.setItem('score', score);
-                localStorage.setItem('level', level);
-            });
+let rawProvider = null;
+let ethersProvider = null;
+let signer = null;
 
-            gameContainer.appendChild(burger); // Add burger to the game container
-        }
+const connectBtn = document.getElementById('connectBtn');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const wcStatus = document.getElementById('wcStatus');
+const wcAddress = document.getElementById('wcAddress');
+const wcChain = document.getElementById('wcChain');
+const wcBalance = document.getElementById('wcBalance');
 
-        // Start creating burgers with the current interval
-        burgerCreation = setInterval(createBurger, burgerInterval); 
+async function connectWallet(){
+  if (!web3Modal) { alert("Wallet connection not available."); return; }
+  try {
+    rawProvider = await web3Modal.connect();
+    // listen
+    rawProvider.on && rawProvider.on("accountsChanged", (accounts) => onAccountsChanged(accounts));
+    rawProvider.on && rawProvider.on("chainChanged", (chainId) => onChainChanged(chainId));
+    rawProvider.on && rawProvider.on("disconnect", (code, reason) => onDisconnect());
 
-        // Function to simulate watching an ad and giving bonus points
-        function watchAd() {
-            const bonusPoints = 10; // Points awarded for watching an ad
-            score += bonusPoints;
-            scoreDisplay.textContent = score; // Update score display
+    ethersProvider = new ethers.providers.Web3Provider(rawProvider);
+    signer = ethersProvider.getSigner();
 
-            // Show ad banner
-            adBanner.style.display = 'flex';
-            adBanner.textContent = `You watched an ad! Earned ${bonusPoints} points!`;
-            setTimeout(() => {
-                adBanner.style.display = 'none'; // Hide after 2 seconds
-            }, 2000); // Show for 2 seconds
+    const address = await signer.getAddress();
+    const network = await ethersProvider.getNetwork();
+    const balanceBN = await ethersProvider.getBalance(address);
+    const balance = parseFloat(ethers.utils.formatEther(balanceBN));
 
-            // Save the new score
-            localStorage.setItem('score', score);
-        }
+    wcStatus.textContent = "Yes";
+    wcAddress.textContent = short(address);
+    wcChain.textContent = `${network.name} (id:${network.chainId})`;
+    wcBalance.textContent = `${balance.toFixed(4)} ETH`;
+    connectBtn.style.display = 'none';
+    disconnectBtn.style.display = 'inline-block';
 
-        adButton.addEventListener('click', watchAd); // Attach event listener to the ad button
-    </script>
+    // Use wallet address as player identity automatically (short form in UI)
+    player.id = address;
+    player.name = short(address);
+    savePlayer();
+    refreshHeader();
+
+  } catch (err) {
+    console.error("connect error", err);
+    alert("Connection failed. Check console for details.");
+  }
+}
+
+async function disconnectWallet(){
+  try{
+    if (rawProvider && rawProvider.close) await rawProvider.close();
+    if (web3Modal && web3Modal.clearCachedProvider) await web3Modal.clearCachedProvider();
+  } catch(e){ console.warn('disconnect err', e); }
+  rawProvider = null; ethersProvider = null; signer = null;
+  wcStatus.textContent = "No";
+  wcAddress.textContent = "—";
+  wcChain.textContent = "—";
+  wcBalance.textContent = "—";
+  connectBtn.style.display = 'inline-block';
+  disconnectBtn.style.display = 'none';
+
+  // revert to guest id (keep emoji avatar)
+  if (player && player.id && player.id.startsWith('0x')) {
+    // create guest id but keep avatar
+    const oldAvatar = player.avatar;
+    player = { id: 'guest-'+Math.floor(Math.random()*100000), name: 'Player', dob:'', avatar: oldAvatar, coins: player.coins || 0 };
+    savePlayer();
+    refreshHeader();
+  }
+}
+
+function onAccountsChanged(accounts){
+  if (!accounts || accounts.length === 0) {
+    disconnectWallet();
+    return;
+  }
+  wcAddress.textContent = short(accounts[0]);
+  // automatically switch identity
+  player.id = accounts[0];
+  player.name = short(accounts[0]);
+  savePlayer();
+  refreshHeader();
+}
+
+function onChainChanged(chainId){
+  try { wcChain.textContent = 'chain ' + (parseInt(chainId,16) || chainId); } catch(e){ wcChain.textContent = chainId; }
+}
+
+function onDisconnect(){ disconnectWallet(); }
+
+function short(addr){
+  return addr && addr.length>10 ? addr.slice(0,6)+'...'+addr.slice(-4) : addr;
+}
+
+connectBtn && connectBtn.addEventListener('click', connectWallet);
+disconnectBtn && disconnectBtn.addEventListener('click', disconnectWallet);
+
+/* =========================
+   Game + Profile + Leaderboard
+   ========================= */
+
+const emojiList = ["🍔","🎮","🚀","🦊","🐼","🐸","🐧","🐯","🦁","🐱"];
+// load player either from Telegram WebApp, or saved, or guest
+let tg = window.Telegram?.WebApp;
+let player = null;
+
+if (tg && tg.initDataUnsafe?.user) {
+  const u = tg.initDataUnsafe.user;
+  // if we previously saved a player with that id, load it
+  const saved = localStorage.getItem('player_'+u.id);
+  if (saved) {
+    player = JSON.parse(saved);
+  } else {
+    player = { id: u.id, name: (u.first_name||u.username||('tg-'+u.id)), dob:'', avatar: emojiList[Math.floor(Math.random()*emojiList.length)], coins: parseInt(localStorage.getItem('coins')) || 0 };
+    localStorage.setItem('player_'+u.id, JSON.stringify(player));
+  }
+} else {
+  const saved = localStorage.getItem('player');
+  if (saved) player = JSON.parse(saved);
+  else {
+    player = { id: 'guest-'+Math.floor(Math.random()*900000+100000), name: 'Player', dob:'', avatar: emojiList[Math.floor(Math.random()*emojiList.length)], coins: parseInt(localStorage.getItem('coins')) || 0 };
+    localStorage.setItem('player', JSON.stringify(player));
+  }
+}
+
+// UI refs
+const uiAvatar = document.getElementById('uiAvatar');
+const uiName = document.getElementById('uiName');
+const uiDob = document.getElementById('uiDob');
+const uiCoins = document.getElementById('uiCoins');
+const grid = document.getElementById('grid');
+
+function refreshHeader(){
+  uiAvatar.textContent = player.avatar || '👤';
+  uiName.textContent = player.name || 'Player';
+  uiDob.textContent = player.dob ? ('DOB: '+player.dob) : 'DOB: Not set';
+  uiCoins.textContent = player.coins || 0;
+  document.getElementById('panelAvatar').textContent = player.avatar || '👤';
+  document.getElementById('panelName').textContent = player.name || 'Player';
+  document.getElementById('panelDob').textContent = player.dob || 'Not set';
+}
+refreshHeader();
+
+// spawn 4x4 grid
+const items = ["🍔","🍕","🌭","🍟","🍩","🍎","🥪","🍫"];
+function spawnGrid(){
+  grid.innerHTML = '';
+  for (let i=0;i<16;i++){
+    const c = document.createElement('div');
+    c.className = 'card';
+    const it = items[Math.floor(Math.random()*items.length)];
+    c.textContent = it;
+    c.dataset.item = it;
+    c.addEventListener('click', ()=>onCardClick(c));
+    grid.appendChild(c);
+  }
+}
+spawnGrid();
+
+let first = null;
+function onCardClick(card){
+  if (!first){ first = card; card.style.transform = 'scale(1.05)'; return; }
+  if (first === card){ first.style.transform=''; first = null; return; }
+
+  if (first.dataset.item === card.dataset.item){
+    // matched
+    player.coins = (player.coins||0) + 100;
+    localStorage.setItem('coins', player.coins);
+    savePlayer(); // updates leaderboard
+    refreshHeader();
+
+    // sparkle visual
+    const s = document.createElement('div');
+    s.textContent = '✨';
+    s.style.position = 'absolute';
+    const r = card.getBoundingClientRect();
+    s.style.left = (r.left + r.width/2) + 'px';
+    s.style.top = (r.top + r.height/2) + 'px';
+    s.style.pointerEvents = 'none';
+    document.body.appendChild(s);
+    setTimeout(()=> s.remove(), 700);
+
+    // fade & respawn
+    [first, card].forEach(el=>{
+      el.classList.add('fade-out');
+      setTimeout(()=>{
+        const newIt = items[Math.floor(Math.random()*items.length)];
+        el.textContent = newIt;
+        el.dataset.item = newIt;
+        el.classList.remove('fade-out');
+        el.classList.add('fade-in');
+        setTimeout(()=> el.classList.remove('fade-in'), 300);
+      }, 300);
+    });
+  } else {
+    // mismatch -> quick visual reset
+    setTimeout(()=> { first.style.transform=''; card.style.transform=''; }, 250);
+  }
+  first.style.transform=''; first = null;
+}
+
+/* Leaderboard local-only, unique by player.id */
+function savePlayer(){
+  if (player.id && player.id.startsWith('0x')) {
+    // store under wallet address key for persistence across browsers if used again on same device + wallet
+    localStorage.setItem('player_'+player.id, JSON.stringify(player));
+  } else {
+    localStorage.setItem('player', JSON.stringify(player));
+  }
+  // update leaderboard
+  let lb = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  lb = lb.filter(e => e.id !== player.id);
+  lb.push({ id: player.id, name: player.name, avatar: player.avatar, coins: player.coins });
+  lb.sort((a,b)=>b.coins - a.coins);
+  localStorage.setItem('leaderboard', JSON.stringify(lb));
+}
+
+function renderLeaderboard(){
+  const container = document.getElementById('leaderboardList');
+  const lb = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  if (lb.length === 0) { container.innerHTML = '<div class="small">No scores yet</div>'; return; }
+  container.innerHTML = lb.map((e,i)=> `<div class="lb-entry"><div>${i+1}. ${e.avatar} ${e.name}</div><div><b>${e.coins}💰</b></div></div>`).join('');
+}
+
+/* Panels open/close */
+function openPanel(id){
+  document.getElementById(id).style.display = 'flex';
+  if (id === 'leaderboardPanel') renderLeaderboard();
+  if (id === 'sharePanel') document.getElementById('shareText').textContent = `${player.avatar} ${player.name} — ${player.coins} coins`;
+}
+function closePanel(id){ document.getElementById(id).style.display = 'none'; }
+
+/* Share copying */
+function copyShare(){
+  const text = `${player.avatar} ${player.name} has ${player.coins} coins!`;
+  navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard'));
+}
+
+/* Initialize UI saved state */
+savePlayer(); renderLeaderboard(); refreshHeader();
+
+/* Expose for debugging */
+window._burger = { player, savePlayer, spawnGrid, renderLeaderboard };
+
+</script>
 </body>
 </html>
